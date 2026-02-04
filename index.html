@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdmitCraft by ForeignAdmits - AI Essay Writing Tool</title>
+    <meta name="description" content="AI-powered essay writing and editing tool for university applications worldwide">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- DocX Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        :root {
+            --primary: #1E9BFF;
+            --primary-dark: #0078d4;
+            --secondary: #1E9BFF;
+            --accent: #1E9BFF;
+            --background: #F5F7FA;
+            --surface: #ffffff;
+            --text: #000000;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: var(--background);
+            text-align: center;
+            padding: 4rem 0 3rem;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .brand-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .brand-tag {
+            display: inline-block;
+            background: #e6f4ff;
+            color: var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        h1 span {
+            color: var(--text);
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text);
+            font-weight: 400;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.85rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mode-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(30, 155, 255, 0.2);
+        }
+
+        .mode-card.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 8px 25px rgba(30, 155, 255, 0.3);
+        }
+
+        .mode-card h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .mode-card.active h3,
+        .mode-card.active p {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        label .char-count {
+            float: right;
+            font-weight: 400;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: var(--background);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 155, 255, 0.1);
+        }
+
+        input.error,
+        textarea.error {
+            border-color: var(--error);
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 155, 255, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 155, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--background);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 155, 255, 0.15);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .progress-text {
+            color: var(--text-light);
+            margin-top: 1rem;
+        }
+
+        .output-section {
+            background: var(--background);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            border: 2px solid var(--primary);
+        }
+
+        .essay-output {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .essay-output p {
+            margin-bottom: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .word-count {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--background);
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .word-count.warning {
+            background: #fff3cd;
+            border: 1px solid var(--warning);
+        }
+
+        .word-count.success {
+            background: #d4edda;
+            border: 1px solid var(--success);
+        }
+
+        .info-box {
+            background: #e6f4ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            color: var(--text);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid var(--success);
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid var(--error);
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid var(--warning);
+            color: #856404;
+        }
+
+        .question-section {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .question-section h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step.complete {
+            background: var(--success);
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-light);
+        }
+
+        .footer-logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .auto-save-indicator {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--success);
+        }
+
+        .auto-save-indicator.show {
+            display: flex;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .mode-selector {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <div class="brand-logo">F</div>
+                <div class="brand-name">ForeignAdmits</div>
+            </div>
+            <div class="brand-tag">Powered by ForeignAdmits</div>
+            <h1>AdmitCraft <span>by ForeignAdmits</span></h1>
+            <p class="subtitle">AI-powered essay writing and editing for university applications worldwide</p>
+        </header>
+
+        <!-- Mode Selection -->
+        <div id="modeSelection" class="section">
+            <h2 class="section-title">Choose Your Service</h2>
+            <div class="mode-selector">
+                <div class="mode-card" onclick="selectMode('edit')">
+                    <h3>✏️ Edit Existing Essay</h3>
+                    <p>Refine and perfect your draft to match university standards</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('write')">
+                    <h3>✨ Write New Essay</h3>
+                    <p>Create a compelling essay from your profile and experiences</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Mode Form -->
+        <div id="editMode" class="section hidden">
+            <h2 class="section-title">Essay Editing Service</h2>
+            <div class="info-box">
+                Share your essay, guidelines, and target details. We'll refine it to excellence while maintaining your authentic voice.
+            </div>
+
+            <div class="form-group">
+                <label>University & Course *</label>
+                <input type="text" id="editUniversity" placeholder="e.g., Stanford University - MBA" maxlength="200">
+                <div class="error-message" id="editUniversityError">Please enter university and course</div>
+            </div>
+
+            <div class="form-group">
+                <label>Essay Prompt / Guidelines *</label>
+                <textarea id="editGuidelines" placeholder="Paste the essay question or specific requirements" maxlength="2000"></textarea>
+                <div class="error-message" id="editGuidelinesError">Please enter essay guidelines</div>
+            </div>
+
+            <div class="form-group">
+                <label>Your Current Essay * <span class="char-count" id="editEssayCount">0 words</span></label>
+                <textarea id="editEssay" placeholder="Paste your essay here" maxlength="10000"></textarea>
+                <div class="error-message" id="editEssayError">Please paste your essay</div>
+            </div>
+
+            <div class="form-group">
+                <label>Word Limit (or Character Limit) *</label>
+                <input type="number" id="editLimit" placeholder="e.g., 500" min="50" max="5000">
+                <select id="editLimitType" style="margin-top: 0.5rem;">
+                    <option value="words">Words</option>
+                    <option value="characters">Characters</option>
+                </select>
+                <div class="error-message" id="editLimitError">Please enter a valid limit (50-5000)</div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goBackSafely()">← Back</button>
+                <button class="btn btn-primary" onclick="processEditMode()">Refine Essay</button>
+            </div>
+        </div>
+
+        <!-- Write Mode Form -->
+        <div id="writeMode" class="section hidden">
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step" id="step2">2</div>
+                <div class="step" id="step3">3</div>
+            </div>
+
+            <!-- Step 1: Basic Info -->
+            <div id="writeStep1">
+                <h2 class="section-title">Essay Details</h2>
+                <div class="info-box">
+                    Let's start with the basics of your application.
+                </div>
+
+                <div class="form-group">
+                    <label>Application Type *</label>
+                    <select id="applicationType">
+                        <option value="">Select...</option>
+                        <option value="ug-common-app">UG - US Common App</option>
+                        <option value="ug-specific">UG - University Specific (US)</option>
+                        <option value="ug-other">UG - Other US System</option>
+                        <option value="uk-ucas">UK - UCAS</option>
+                        <option value="singapore">Singapore (NUS/NTU/SMU)</option>
+                        <option value="hongkong">Hong Kong (HKUST/PolyU)</option>
+                        <option value="germany-lom">Germany - Letter of Motivation</option>
+                        <option value="mba">MBA</option>
+                        <option value="ms">MS/MIM/MEM/MSBA</option>
+                    </select>
+                    <div class="error-message" id="appTypeError">Please select application type</div>
+                </div>
+
+                <div class="form-group">
+                    <label>University & Program *</label>
+                    <input type="text" id="writeUniversity" placeholder="e.g., MIT - MS in Computer Science" maxlength="200">
+                    <div class="error-message" id="writeUniversityError">Please enter university and program</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Essay Prompt / Question *</label>
+                    <textarea id="writePrompt" placeholder="Paste the specific question or prompt you need to answer" maxlength="2000"></textarea>
+                    <div class="error-message" id="writePromptError">Please enter essay prompt</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Word/Character Limit *</label>
+                    <input type="number" id="writeLimit" placeholder="e.g., 650" min="50" max="5000">
+                    <select id="writeLimitType" style="margin-top: 0.5rem;">
+                        <option value="words">Words</option>
+                        <option value="characters">Characters</option>
+                    </select>
+                    <div class="error-message" id="writeLimitError">Please enter a valid limit (50-5000)</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goBackSafely()">← Back</button>
+                    <button class="btn btn-primary" onclick="nextStep(2)">Next Step →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Profile Info -->
+            <div id="writeStep2" class="hidden">
+                <h2 class="section-title">Your Profile</h2>
+                <div class="info-box">
+                    Share your background so we can craft a genuine essay.
+                </div>
+
+                <div class="form-group">
+                    <label>Resume/CV (Optional but Recommended)</label>
+                    <textarea id="writeResume" placeholder="Paste your resume content or key highlights" maxlength="5000"></textarea>
+                </div>
+
+                <div id="dynamicQuestions"></div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="prevStep(1)">← Previous</button>
+                    <button class="btn btn-primary" onclick="nextStep(3)">Generate Questions →</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Additional Info -->
+            <div id="writeStep3" class="hidden">
+                <h2 class="section-title">Additional Details</h2>
+                <div class="info-box">
+                    Answer these questions to help us understand your story better.
+                </div>
+
+                <div id="generatedQuestions"></div>
+
+                <div class="form-group">
+                    <label>Any Other Information?</label>
+                    <textarea id="additionalInfo" placeholder="Share anything else you think we should know" maxlength="3000"></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="prevStep(2)">← Previous</button>
+                    <button class="btn btn-primary" onclick="generateEssay()">Generate Draft ✨</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingSection" class="section hidden">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Processing your request...</p>
+                <p class="progress-text" id="progressText">This may take up to 30 seconds.</p>
+            </div>
+        </div>
+
+        <!-- Output Section -->
+        <div id="outputSection" class="section hidden">
+            <h2 class="section-title">Your Essay</h2>
+            
+            <div class="action-buttons">
+                <button class="btn btn-success btn-icon" onclick="copyToClipboard()">
+                    📋 Copy to Clipboard
+                </button>
+                <button class="btn btn-primary btn-icon" onclick="downloadAsWord()">
+                    📄 Download as Word
+                </button>
+                <button class="btn btn-secondary btn-icon" onclick="downloadAsText()">
+                    📝 Download as Text
+                </button>
+            </div>
+
+            <div id="copySuccess" class="alert alert-success hidden">
+                ✓ Essay copied to clipboard!
+            </div>
+
+            <div class="output-section">
+                <div id="essayOutput" class="essay-output"></div>
+            </div>
+            <div class="word-count" id="wordCount"></div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label>Feedback / Edits Needed</label>
+                <textarea id="feedbackText" placeholder="Share what you'd like to change or improve" maxlength="1000"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goBackSafely()">← Start New</button>
+                <button class="btn btn-primary" onclick="refineEssay()">Refine Further ✨</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-save indicator -->
+    <div class="auto-save-indicator" id="autoSaveIndicator">
+        <span>💾</span>
+        <span>Draft saved</span>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">ForeignAdmits</div>
+            <p>Your AI Operating System for Study Abroad</p>
+            <div class="footer-links">
+                <a href="https://www.foreignadmits.com" target="_blank">About Us</a>
+                <a href="https://www.foreignadmits.com/partner-with-us" target="_blank">Partner With Us</a>
+                <a href="https://app.foreignadmits.com/auth/login" target="_blank">Login</a>
+            </div>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">© 2025 Edument Consultancy Pvt. Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        
+        // IMPORTANT: Update this with your deployed backend URL
+        const API_URL = 'YOUR_BACKEND_URL_HERE';
+        
+        // For local development, use:
+        // const API_URL = 'http://localhost:3000';
+
+        // ==================== STATE MANAGEMENT ====================
+        
+        let currentMode = null;
+        let conversationHistory = [];
+        let currentEssayContent = '';
+        let autoSaveTimeout = null;
+
+        // AI Buzzwords to avoid
+        const bannedPhrases = [
+            'bustling', 'harnessing', 'realm', 'depicted', 'demystify', 'insurmountable',
+            'poised', 'unravel', 'unprecedented', 'beacon', 'unleash', 'delve',
+            'enrich', 'multifaceted', 'elevate', 'discover', 'supercharge', 'unlock',
+            'tailored', 'elegant', 'dive', 'ever-evolving', 'meticulously', 'grappling',
+            'weighing', 'architect', 'adventure', 'journey', 'embark', 'navigate',
+            'tapestry', 'leverage', 'robust', 'cutting-edge', 'groundbreaking'
+        ];
+
+        // ==================== INITIALIZATION ====================
+        
+        window.onload = function() {
+            loadDraft();
+            setupAutoSave();
+            setupCharacterCounters();
+            
+            if (API_URL === 'YOUR_BACKEND_URL_HERE') {
+                console.warn('Backend URL not configured. Please update API_URL in the code.');
+            }
+        };
+
+        // ==================== AUTO-SAVE FUNCTIONALITY ====================
+        
+        function setupAutoSave() {
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(function(textarea) {
+                textarea.addEventListener('input', function() {
+                    clearTimeout(autoSaveTimeout);
+                    autoSaveTimeout = setTimeout(saveDraft, 2000);
+                });
+            });
+        }
+
+        function saveDraft() {
+            try {
+                const draft = {
+                    mode: currentMode,
+                    timestamp: new Date().toISOString(),
+                    editMode: {
+                        university: document.getElementById('editUniversity').value || '',
+                        guidelines: document.getElementById('editGuidelines').value || '',
+                        essay: document.getElementById('editEssay').value || '',
+                        limit: document.getElementById('editLimit').value || '',
+                        limitType: document.getElementById('editLimitType').value || 'words'
+                    },
+                    writeMode: {
+                        applicationType: document.getElementById('applicationType').value || '',
+                        university: document.getElementById('writeUniversity').value || '',
+                        prompt: document.getElementById('writePrompt').value || '',
+                        limit: document.getElementById('writeLimit').value || '',
+                        limitType: document.getElementById('writeLimitType').value || 'words',
+                        resume: document.getElementById('writeResume').value || '',
+                        additionalInfo: document.getElementById('additionalInfo').value || ''
+                    }
+                };
+                
+                localStorage.setItem('admitcraft_draft', JSON.stringify(draft));
+                showAutoSaveIndicator();
+            } catch (e) {
+                console.error('Failed to save draft:', e);
+            }
+        }
+
+        function loadDraft() {
+            try {
+                const draftStr = localStorage.getItem('admitcraft_draft');
+                if (!draftStr) return;
+                
+                const draft = JSON.parse(draftStr);
+                const age = Date.now() - new Date(draft.timestamp).getTime();
+                
+                if (age > 24 * 60 * 60 * 1000) {
+                    localStorage.removeItem('admitcraft_draft');
+                    return;
+                }
+                
+                if (confirm('We found a saved draft from earlier. Would you like to restore it?')) {
+                    if (draft.editMode) {
+                        document.getElementById('editUniversity').value = draft.editMode.university;
+                        document.getElementById('editGuidelines').value = draft.editMode.guidelines;
+                        document.getElementById('editEssay').value = draft.editMode.essay;
+                        document.getElementById('editLimit').value = draft.editMode.limit;
+                        document.getElementById('editLimitType').value = draft.editMode.limitType;
+                    }
+                    if (draft.writeMode) {
+                        document.getElementById('applicationType').value = draft.writeMode.applicationType;
+                        document.getElementById('writeUniversity').value = draft.writeMode.university;
+                        document.getElementById('writePrompt').value = draft.writeMode.prompt;
+                        document.getElementById('writeLimit').value = draft.writeMode.limit;
+                        document.getElementById('writeLimitType').value = draft.writeMode.limitType;
+                        document.getElementById('writeResume').value = draft.writeMode.resume;
+                        document.getElementById('additionalInfo').value = draft.writeMode.additionalInfo;
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load draft:', e);
+            }
+        }
+
+        function showAutoSaveIndicator() {
+            const indicator = document.getElementById('autoSaveIndicator');
+            indicator.classList.add('show');
+            setTimeout(function() {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        function clearDraft() {
+            localStorage.removeItem('admitcraft_draft');
+        }
+
+        // ==================== CHARACTER COUNTERS ====================
+        
+        function setupCharacterCounters() {
+            const editEssay = document.getElementById('editEssay');
+            if (editEssay) {
+                editEssay.addEventListener('input', function() {
+                    const count = countWords(editEssay.value);
+                    document.getElementById('editEssayCount').textContent = count + ' words';
+                });
+            }
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        
+        function countWords(text) {
+            if (!text || !text.trim()) return 0;
+            return text.trim().split(/\s+/).filter(function(word) { 
+                return word.length > 0; 
+            }).length;
+        }
+
+        function countCharacters(text) {
+            return text ? text.length : 0;
+        }
+
+        function showError(elementId, message) {
+            const errorDiv = document.getElementById(elementId);
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.classList.add('show');
+                const input = document.getElementById(elementId.replace('Error', ''));
+                if (input) input.classList.add('error');
+            }
+        }
+
+        function clearError(elementId) {
+            const errorDiv = document.getElementById(elementId);
+            if (errorDiv) {
+                errorDiv.classList.remove('show');
+                const input = document.getElementById(elementId.replace('Error', ''));
+                if (input) input.classList.remove('error');
+            }
+        }
+
+        function clearAllErrors() {
+            document.querySelectorAll('.error-message').forEach(function(el) {
+                el.classList.remove('show');
+            });
+            document.querySelectorAll('.error').forEach(function(el) {
+                el.classList.remove('error');
+            });
+        }
+
+        // ==================== NAVIGATION ====================
+        
+        function selectMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeSelection').classList.add('hidden');
+            if (mode === 'edit') {
+                document.getElementById('editMode').classList.remove('hidden');
+            } else {
+                document.getElementById('writeMode').classList.remove('hidden');
+            }
+            saveDraft();
+        }
+
+        function goBackSafely() {
+            if (confirm('Are you sure? Any unsaved changes will be lost.')) {
+                clearDraft();
+                location.reload();
+            }
+        }
+
+        function nextStep(step) {
+            clearAllErrors();
+            
+            if (step === 2) {
+                const appType = document.getElementById('applicationType').value;
+                const university = document.getElementById('writeUniversity').value;
+                const prompt = document.getElementById('writePrompt').value;
+                const limit = document.getElementById('writeLimit').value;
+
+                let hasError = false;
+
+                if (!appType) {
+                    showError('appTypeError', 'Please select application type');
+                    hasError = true;
+                }
+                if (!university || university.trim().length < 3) {
+                    showError('writeUniversityError', 'Please enter university and program');
+                    hasError = true;
+                }
+                if (!prompt || prompt.trim().length < 10) {
+                    showError('writePromptError', 'Please enter a detailed essay prompt');
+                    hasError = true;
+                }
+                if (!limit || limit < 50 || limit > 5000) {
+                    showError('writeLimitError', 'Please enter a valid limit (50-5000)');
+                    hasError = true;
+                }
+
+                if (hasError) return;
+
+                document.getElementById('writeStep1').classList.add('hidden');
+                document.getElementById('writeStep2').classList.remove('hidden');
+                document.getElementById('step1').classList.add('complete');
+                document.getElementById('step2').classList.add('active');
+                saveDraft();
+            } else if (step === 3) {
+                generateDynamicQuestions();
+            }
+        }
+
+        function prevStep(step) {
+            if (step === 1) {
+                document.getElementById('writeStep2').classList.add('hidden');
+                document.getElementById('writeStep1').classList.remove('hidden');
+                document.getElementById('step1').classList.remove('complete');
+                document.getElementById('step2').classList.remove('active');
+            } else if (step === 2) {
+                document.getElementById('writeStep3').classList.add('hidden');
+                document.getElementById('writeStep2').classList.remove('hidden');
+                document.getElementById('step2').classList.remove('complete');
+                document.getElementById('step3').classList.remove('active');
+            }
+        }
+
+        // ==================== API CALLS ====================
+        
+        async function callAPI(messages, maxTokens) {
+            maxTokens = maxTokens || 4000;
+            
+            if (API_URL === 'YOUR_BACKEND_URL_HERE') {
+                throw new Error('Backend URL not configured. Please update API_URL in the code with your deployed backend URL.');
+            }
+
+            const response = await fetch(API_URL + '/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    messages: messages,
+                    maxTokens: maxTokens
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(function() { return {}; });
+                throw new Error(errorData.message || 'Server error: ' + response.status);
+            }
+
+            return await response.json();
+        }
+
+        // ==================== EDIT MODE ====================
+        
+        async function processEditMode() {
+            clearAllErrors();
+            
+            const university = document.getElementById('editUniversity').value;
+            const guidelines = document.getElementById('editGuidelines').value;
+            const essay = document.getElementById('editEssay').value;
+            const limit = document.getElementById('editLimit').value;
+            const limitType = document.getElementById('editLimitType').value;
+
+            let hasError = false;
+
+            if (!university || university.trim().length < 3) {
+                showError('editUniversityError', 'Please enter university and course');
+                hasError = true;
+            }
+            if (!guidelines || guidelines.trim().length < 10) {
+                showError('editGuidelinesError', 'Please enter detailed guidelines');
+                hasError = true;
+            }
+            if (!essay || essay.trim().length < 50) {
+                showError('editEssayError', 'Please paste your essay (minimum 50 characters)');
+                hasError = true;
+            }
+            if (!limit || limit < 50 || limit > 5000) {
+                showError('editLimitError', 'Please enter a valid limit (50-5000)');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            document.getElementById('editMode').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('progressText').textContent = 'Analyzing and refining your essay...';
+
+            try {
+                const promptText = 'You are an expert academic essay editor specializing in university applications. Your task: Edit and refine this essay to the highest academic standards. University/Program: ' + university + ' Essay Guidelines: ' + guidelines + ' Target: ' + limit + ' ' + limitType + ' (aim for 90% of this limit) Current Essay: ' + essay + ' Requirements: 1. Maintain the student\'s authentic voice and experiences - do NOT change their story 2. Fix ALL typos and grammatical errors 3. Improve clarity, flow, and impact 4. Ensure natural, human writing - AVOID these AI buzzwords: ' + bannedPhrases.join(', ') + ' 5. Stay within 90% of the ' + limit + ' ' + limitType + ' limit 6. Make it compelling while staying genuine Provide the refined essay without any preamble or explanation. Just the essay text.';
+                
+                const data = await callAPI([{
+                    role: "user",
+                    content: promptText
+                }]);
+                
+                currentEssayContent = data.content[0].text.trim();
+                
+                conversationHistory = [
+                    {
+                        role: "user",
+                        content: 'Edit this essay for ' + university + '. Guidelines: ' + guidelines + '. Limit: ' + limit + ' ' + limitType + '. Essay: ' + essay
+                    },
+                    {
+                        role: "assistant",
+                        content: currentEssayContent
+                    }
+                ];
+
+                displayOutput(currentEssayContent, limit, limitType);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('editMode').classList.remove('hidden');
+                
+                let errorMessage = 'Failed to process your essay. ';
+                if (error.message.includes('Backend URL not configured')) {
+                    errorMessage += 'The backend server is not configured. Please contact support.';
+                } else if (error.message.includes('Rate limit')) {
+                    errorMessage += 'Too many requests. Please try again in an hour.';
+                } else if (error.message.includes('429')) {
+                    errorMessage += 'Service is experiencing high demand. Please try again in a few moments.';
+                } else {
+                    errorMessage += 'Please check your internet connection and try again.';
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        // ==================== WRITE MODE ====================
+        
+        async function generateDynamicQuestions() {
+            const appType = document.getElementById('applicationType').value;
+            const university = document.getElementById('writeUniversity').value;
+            const prompt = document.getElementById('writePrompt').value;
+            const resume = document.getElementById('writeResume').value;
+
+            document.getElementById('writeStep2').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('progressText').textContent = 'Generating personalized questions...';
+
+            try {
+                const promptText = 'You are an expert academic advisor. Based on this application: Application Type: ' + appType + ' University/Program: ' + university + ' Essay Prompt: ' + prompt + (resume ? ' Resume/Background: ' + resume : '') + ' Generate 5-7 specific questions that will help gather the right information to write an outstanding essay. Focus on: - Specific experiences and achievements relevant to this prompt - Motivations and goals - Unique perspectives or challenges - Concrete examples and stories Return ONLY a JSON array of question strings, nothing else. Example format: ["Question 1?", "Question 2?", "Question 3?"]';
+                
+                const data = await callAPI([{
+                    role: "user",
+                    content: promptText
+                }], 1000);
+
+                const content = data.content[0].text.trim();
+                let questions;
+                
+                try {
+                    questions = JSON.parse(content.replace(/```json|```/g, ''));
+                    if (!Array.isArray(questions) || questions.length === 0) {
+                        throw new Error('Invalid response format');
+                    }
+                } catch (e) {
+                    throw new Error('Failed to generate questions. Please try again.');
+                }
+
+                const questionsDiv = document.getElementById('generatedQuestions');
+                questionsDiv.innerHTML = '';
+                
+                questions.forEach(function(q, i) {
+                    const div = document.createElement('div');
+                    div.className = 'question-section';
+                    div.innerHTML = '<h4>Question ' + (i + 1) + '</h4><p>' + q + '</p><textarea id="answer' + i + '" placeholder="Your answer..." style="width: 100%; margin-top: 0.5rem; min-height: 100px; padding: 0.75rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: Inter, sans-serif;" maxlength="1000"></textarea>';
+                    questionsDiv.appendChild(div);
+                });
+
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('writeStep3').classList.remove('hidden');
+                document.getElementById('step2').classList.add('complete');
+                document.getElementById('step3').classList.add('active');
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('writeStep2').classList.remove('hidden');
+                alert('Failed to generate questions: ' + error.message);
+            }
+        }
+
+        async function generateEssay() {
+            const appType = document.getElementById('applicationType').value;
+            const university = document.getElementById('writeUniversity').value;
+            const prompt = document.getElementById('writePrompt').value;
+            const limit = document.getElementById('writeLimit').value;
+            const limitType = document.getElementById('writeLimitType').value;
+            const resume = document.getElementById('writeResume').value;
+            const additional = document.getElementById('additionalInfo').value;
+
+            const answers = [];
+            const questionsDiv = document.getElementById('generatedQuestions');
+            const textareas = questionsDiv.getElementsByTagName('textarea');
+            for (let i = 0; i < textareas.length; i++) {
+                if (textareas[i].value && textareas[i].value.trim()) {
+                    answers.push(textareas[i].value.trim());
+                }
+            }
+
+            if (answers.length < 3) {
+                alert('Please answer at least 3 questions to generate a quality essay.');
+                return;
+            }
+
+            document.getElementById('writeStep3').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('progressText').textContent = 'Crafting your essay... This may take up to 30 seconds.';
+
+            try {
+                const promptText = 'You are an expert academic essay writer specializing in university applications. Application Details: - Type: ' + appType + ' - University/Program: ' + university + ' - Essay Prompt: ' + prompt + ' - Limit: ' + limit + ' ' + limitType + ' (aim for 90% of this) Student Profile: ' + (resume ? 'Resume/Background: ' + resume : '') + ' Student\'s Responses: ' + answers.join(' ') + ' ' + (additional ? 'Additional Information: ' + additional : '') + ' Your task: 1. Write a compelling, authentic essay that directly addresses the prompt 2. Use the student\'s real experiences and voice 3. Structure it naturally with smooth flow 4. Target 90% of the ' + limit + ' ' + limitType + ' limit 5. CRITICAL: Write like a real human student - AVOID these AI buzzwords: ' + bannedPhrases.join(', ') + ' 6. Make it genuine, not generic or artificial Provide ONLY the essay text with clear paragraph breaks. No preamble, no explanation, no meta-commentary. Just the essay.';
+                
+                const data = await callAPI([{
+                    role: "user",
+                    content: promptText
+                }]);
+
+                currentEssayContent = data.content[0].text.trim();
+
+                conversationHistory = [
+                    {
+                        role: "user",
+                        content: 'Write an essay for ' + university + '. Prompt: ' + prompt + '. Based on: ' + JSON.stringify({resume: resume, answers: answers, additional: additional})
+                    },
+                    {
+                        role: "assistant",
+                        content: currentEssayContent
+                    }
+                ];
+
+                displayOutput(currentEssayContent, limit, limitType);
+                clearDraft();
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('writeStep3').classList.remove('hidden');
+                
+                let errorMessage = 'Failed to generate essay: ';
+                if (error.message.includes('Backend URL not configured')) {
+                    errorMessage += 'The backend server is not configured. Please contact support.';
+                } else if (error.message.includes('Rate limit')) {
+                    errorMessage += 'Too many requests. Please try again in an hour.';
+                } else {
+                    errorMessage += error.message || 'Please try again.';
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        async function refineEssay() {
+            const feedback = document.getElementById('feedbackText').value;
+            if (!feedback || feedback.trim().length < 10) {
+                alert('Please provide specific feedback on what you would like to improve (minimum 10 characters).');
+                return;
+            }
+
+            document.getElementById('outputSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('progressText').textContent = 'Refining your essay based on feedback...';
+
+            const limit = currentMode === 'edit' ? 
+                document.getElementById('editLimit').value : 
+                document.getElementById('writeLimit').value;
+            const limitType = currentMode === 'edit' ? 
+                document.getElementById('editLimitType').value : 
+                document.getElementById('writeLimitType').value;
+
+            try {
+                conversationHistory.push({
+                    role: "user",
+                    content: 'Refine the essay based on this feedback: ' + feedback + ' Remember: - Keep it within ' + limit + ' ' + limitType + ' (90% of limit) - Maintain authentic voice - No AI buzzwords: ' + bannedPhrases.join(', ') + ' - Keep the core story intact Provide only the revised essay text.'
+                });
+
+                const data = await callAPI(conversationHistory);
+                currentEssayContent = data.content[0].text.trim();
+                
+                conversationHistory.push({
+                    role: "assistant",
+                    content: currentEssayContent
+                });
+
+                displayOutput(currentEssayContent, limit, limitType);
+                document.getElementById('feedbackText').value = '';
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('outputSection').classList.remove('hidden');
+                alert('Failed to refine essay: ' + (error.message || 'Please try again.'));
+            }
+        }
+
+        // ==================== OUTPUT DISPLAY ====================
+        
+        function displayOutput(content, limit, limitType) {
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('outputSection').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const formatted = content.split('\n\n').map(function(p) { 
+                return '<p>' + p + '</p>'; 
+            }).join('');
+            document.getElementById('essayOutput').innerHTML = formatted;
+
+            const count = limitType === 'words' ? 
+                countWords(content) : 
+                countCharacters(content);
+            
+            const target = Math.round(limit * 0.9);
+            const percentage = (count / limit * 100).toFixed(1);
+            
+            const countDiv = document.getElementById('wordCount');
+            countDiv.innerHTML = '<div><strong>Current:</strong> ' + count + ' ' + limitType + '<span style="margin-left: 1rem;"><strong>Target:</strong> ' + target + ' ' + limitType + ' (90%)</span><span style="margin-left: 1rem;"><strong>Limit:</strong> ' + limit + ' ' + limitType + '</span></div><div><strong>' + percentage + '% of limit</strong></div>';
+
+            if (count > limit) {
+                countDiv.className = 'word-count warning';
+            } else if (count >= target && count <= limit) {
+                countDiv.className = 'word-count success';
+            } else {
+                countDiv.className = 'word-count';
+            }
+        }
+
+        // ==================== COPY & DOWNLOAD ====================
+        
+        async function copyToClipboard() {
+            try {
+                await navigator.clipboard.writeText(currentEssayContent);
+                const alert = document.getElementById('copySuccess');
+                alert.classList.remove('hidden');
+                setTimeout(function() {
+                    alert.classList.add('hidden');
+                }, 3000);
+            } catch (error) {
+                const textarea = document.createElement('textarea');
+                textarea.value = currentEssayContent;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Essay copied to clipboard!');
+            }
+        }
+
+        function downloadAsText() {
+            const blob = new Blob([currentEssayContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'essay-' + new Date().toISOString().split('T')[0] + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        async function downloadAsWord() {
+            try {
+                const paragraphs = currentEssayContent.split('\n\n');
+                
+                const doc = new docx.Document({
+                    sections: [{
+                        properties: {},
+                        children: paragraphs.map(function(para) {
+                            return new docx.Paragraph({
+                                text: para,
+                                spacing: {
+                                    after: 200,
+                                },
+                            });
+                        }),
+                    }],
+                });
+
+                const blob = await docx.Packer.toBlob(doc);
+                saveAs(blob, 'essay-' + new Date().toISOString().split('T')[0] + '.docx');
+            } catch (error) {
+                console.error('Error generating Word document:', error);
+                alert('Failed to create Word document. Downloading as text instead.');
+                downloadAsText();
+            }
+        }
+    </script>
+</body>
+</html>
