@@ -1,0 +1,104 @@
+name: Deploy AdmitCraft
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Backend deployment is handled by Vercel automatically
+  # This workflow handles frontend deployment to GitHub Pages
+  
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Check if backend URL is configured
+      run: |
+        if grep -q "YOUR_BACKEND_URL_HERE" index.html; then
+          echo "⚠️ Warning: Backend URL not configured in index.html"
+          echo "Please update API_URL with your Vercel backend URL"
+        else
+          echo "✅ Backend URL is configured"
+        fi
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
+        exclude_assets: 'backend/**,node_modules/**,.git/**'
+    
+    - name: Deployment Summary
+      run: |
+        echo "🎉 Deployment Complete!"
+        echo "Frontend: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+        echo "Backend: Check Vercel dashboard for URL"
+
+  # Test backend code (runs on PRs)
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        npm ci
+    
+    - name: Check for syntax errors
+      run: |
+        cd backend
+        node -c server.js
+        echo "✅ No syntax errors in backend code"
+    
+    - name: Lint package.json
+      run: |
+        cd backend
+        if [ -f package.json ]; then
+          echo "✅ package.json exists"
+          node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))"
+          echo "✅ package.json is valid JSON"
+        fi
+    
+    - name: Check environment template
+      run: |
+        cd backend
+        if [ -f .env.example ]; then
+          echo "✅ .env.example exists"
+          cat .env.example
+        else
+          echo "❌ .env.example missing"
+          exit 1
+        fi
+
+  # Notify on deployment
+  notify:
+    needs: [deploy-frontend]
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+    - name: Deployment Success
+      run: |
+        echo "🚀 AdmitCraft deployed successfully!"
+        echo "Frontend URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+        echo "Remember to:"
+        echo "1. Check Vercel for backend deployment status"
+        echo "2. Test the application end-to-end"
+        echo "3. Monitor logs for any errors"
