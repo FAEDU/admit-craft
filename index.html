@@ -807,7 +807,45 @@
         // ==================== CONFIGURATION ====================
         
         // IMPORTANT: Update this with your deployed backend URL
-        const API_URL = 'https://admit-craft.vercel.app/api';
+        const API_URL = 'https://admit-craft.vercel.app';
+```
+7. **Commit**: Scroll down → Commit message: "Fix API connection" → Commit
+
+8. **Wait 2 minutes** for GitHub Pages to rebuild
+
+---
+
+### **Step 3: Test** (30 sec)
+
+1. Go back to: https://faedu.github.io/admit-craft/
+2. **Hard refresh**: Press Ctrl+Shift+R (or Cmd+Shift+R on Mac)
+3. Try generating an essay
+4. ✅ Should work now!
+
+---
+
+## 🎯 **WHAT'S HAPPENING**
+```
+You (trying to generate essay)
+    ↓
+GitHub Pages Frontend
+    ↓ Calls API_URL
+    ❌ API_URL = 'YOUR_BACKEND_URL_HERE' (invalid!)
+    ↓
+Error: "Failed to process your essay"
+```
+
+**After fix:**
+```
+You (trying to generate essay)
+    ↓
+GitHub Pages Frontend
+    ↓ Calls API_URL
+    ✅ API_URL = 'https://admit-craft.vercel.app' (correct!)
+    ↓
+Vercel Backend
+    ↓
+Essay generated! ✅
         
         // For local development, use:
         // const API_URL = 'http://localhost:3000';
